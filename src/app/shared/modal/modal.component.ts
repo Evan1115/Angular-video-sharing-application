@@ -1,4 +1,5 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, ElementRef, Input, OnInit } from '@angular/core';
+import { ModalService } from 'src/app/services/modal.service';
 
 @Component({
   selector: 'app-modal',
@@ -7,9 +8,19 @@ import { Component, OnInit } from '@angular/core';
 })
 export class ModalComponent implements OnInit {
 
-  constructor() { }
+  @Input() modalId = '';
+
+  //ElementRef refer to the host DOM of this component which is app-modal
+  constructor(public modal: ModalService, public ef: ElementRef) {}
+
 
   ngOnInit(): void {
+    //move app-modal to root when component is initialized
+    document.body.appendChild(this.ef.nativeElement)
+  }
+
+  closeModal(id: string) {
+    this.modal.toggleModal(id);
   }
 
 }
