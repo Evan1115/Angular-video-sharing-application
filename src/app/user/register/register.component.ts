@@ -13,10 +13,20 @@ export class RegisterComponent{
       Validators.required,
       Validators.minLength(3)
     ]), //accept a defaul value for the field it is handling and validators array
-    email: new FormControl(""),
-    password: new FormControl(""),
+    email: new FormControl("",[
+      Validators.required,
+      Validators.email
+    ]),
+    password: new FormControl("", [
+      Validators.required,
+      Validators.pattern(/^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[a-zA-Z]).{8,}$/gm)
+    ]),
     confirm_password: new FormControl(""),
-    age: new FormControl(""),
+    age: new FormControl("",[
+      Validators.required,
+      Validators.min(18),
+      Validators.max(120)
+    ]),
     phoneNumber: new FormControl(""),
   })
 
