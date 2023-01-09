@@ -7,7 +7,7 @@ import { FormControl, FormGroup, Validators } from '@angular/forms';
   styleUrls: ['./register.component.css'],
 })
 export class RegisterComponent {
-  showAlert = true;
+  showAlert = false;
   alertMessage = 'Account is created';
   color = 'blue';
 
