@@ -1,4 +1,4 @@
-import { Component, ElementRef, Input, OnInit } from '@angular/core';
+import { Component, ElementRef, Input, OnInit, OnDestroy } from '@angular/core';
 import { ModalService } from 'src/app/services/modal.service';
 
 @Component({
@@ -6,7 +6,7 @@ import { ModalService } from 'src/app/services/modal.service';
   templateUrl: './modal.component.html',
   styleUrls: ['./modal.component.css']
 })
-export class ModalComponent implements OnInit {
+export class ModalComponent implements OnInit, OnDestroy{
 
   @Input() modalId = '';
 
@@ -17,6 +17,11 @@ export class ModalComponent implements OnInit {
   ngOnInit(): void {
     //move app-modal to root when component is initialized
     document.body.appendChild(this.ef.nativeElement)
+  }
+
+  //remove the element when it's destroyed (due to parent component is removed - auth-modal)
+  ngOnDestroy(): void {
+    document.body.removeChild(this.ef.nativeElement)
   }
 
   closeModal(id: string) {
