@@ -40,7 +40,7 @@
   <div class="mb-3">
     <label class="inline-block mb-2">Confirm Password</label>
     <app-input
-      [control]="registerForm.controls.password"
+      [control]="registerForm.controls.confirm_password"
       type="password"
       placeholder="Enter Password"
     ></app-input>
@@ -63,3 +63,5 @@
     Submit
   </button>
 </form>
+
+<p>{{ registerForm.errors | json }}</p>

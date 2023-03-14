@@ -2,6 +2,8 @@ import { Component } from '@angular/core';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { AuthService } from 'src/app/services/auth.service';
 import IUser from 'src/app/models/user.model';
+import { RegisterValidators } from '../validators/register-validators';
+import { EmailTaken } from '../validators/email-taken';
 
 @Component({
   selector: 'app-register',
@@ -14,30 +16,36 @@ export class RegisterComponent {
   color = 'blue';
   inSubmission = false;
 
-  constructor(private authService: AuthService) {}
+  constructor(
+    private authService: AuthService,
+    private emailTaken: EmailTaken
+  ) {}
 
-  registerForm = new FormGroup({
-    // FormGroup is a container to a form whereas formcontrol is a to handle single field
-    name: new FormControl('', [Validators.required, Validators.minLength(3)]), //accept a defaul value for the field it is handling and validators array
-    email: new FormControl('', [Validators.required, Validators.email]),
-    password: new FormControl('', [
-      Validators.required,
-      Validators.pattern(
-        /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[a-zA-Z]).{8,}$/gm
-      ),
-    ]),
-    confirm_password: new FormControl(''),
-    age: new FormControl<Number | null>(null, [
-      Validators.required,
-      Validators.min(18),
-      Validators.max(120),
-    ]), //dynamic type (number or null)
-    phoneNumber: new FormControl('', [
-      Validators.required,
-      Validators.min(13),
-      Validators.max(13),
-    ]), // string or null by default
-  });
+  registerForm = new FormGroup(
+    {
+      // FormGroup is a container to a form whereas formcontrol is a to handle single field
+      name: new FormControl('', [Validators.required, Validators.minLength(3)]), //accept a defaul value for the field it is handling and validators array
+      email: new FormControl('', [Validators.required, Validators.email], [this.emailTaken.validate]),
+      password: new FormControl('', [
+        Validators.required,
+        Validators.pattern(
+          /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[a-zA-Z]).{8,}$/gm
+        ),
+      ]),
+      confirm_password: new FormControl(''),
+      age: new FormControl<Number | null>(null, [
+        Validators.required,
+        Validators.min(18),
+        Validators.max(120),
+      ]), //dynamic type (number or null)
+      phoneNumber: new FormControl('', [
+        Validators.required, //a reference to Validators.required function
+        Validators.min(13), //factory function where min() will return a validator function
+        Validators.max(13),
+      ]), // string or null by default
+    },
+    [RegisterValidators.match('password', 'confirm_password')]
+  );
 
   async register() {
     this.showAlert = true;
