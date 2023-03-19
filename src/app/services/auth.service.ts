@@ -1,11 +1,12 @@
-import { Injectable } from '@angular/core';
+import { Injectable, OnInit } from '@angular/core';
 import { AngularFireAuth } from '@angular/fire/compat/auth';
 import {
   AngularFirestore,
   AngularFirestoreCollection,
 } from '@angular/fire/compat/firestore';
-import {map, Observable, tap } from 'rxjs';
-import { delay } from 'rxjs/operators';
+import { ActivatedRoute, NavigationEnd, Router } from '@angular/router';
+import { map, Observable, of, tap } from 'rxjs';
+import { delay, filter, switchMap } from 'rxjs/operators';
 import IUser from '../models/user.model';
 
 @Injectable({
@@ -13,17 +14,32 @@ import IUser from '../models/user.model';
 })
 export class AuthService {
   private userCollection: AngularFirestoreCollection<IUser>;
-  public isAuthenticated$ : Observable<boolean>
-  public isAuthenticatedWithDelay$: Observable<boolean>
+  public isAuthenticated$: Observable<boolean>;
+  public isAuthenticatedWithDelay$: Observable<boolean>;
+  private isRedirect = false;
 
-  constructor(private auth: AngularFireAuth, private db: AngularFirestore) {
+  constructor(
+    private auth: AngularFireAuth,
+    private db: AngularFirestore,
+    private router: Router,
+    private route: ActivatedRoute
+  ) {
     this.userCollection = this.db.collection('users'); //create  a reference to firestore collection
     this.isAuthenticated$ = this.auth.user.pipe(
       tap(console.log),
-      map(user => !!user) // !! convert value to boolean. True if is true, false if is false
-    )//return user object when signed in else null
+      map((user) => !!user) // !! convert value to boolean. True if is true, false if is false
+    ); //return user object when signed in else null
 
-    this.isAuthenticatedWithDelay$ = this.isAuthenticated$.pipe(delay(1000))
+    this.isAuthenticatedWithDelay$ = this.isAuthenticated$.pipe(delay(1000));
+    this.router.events
+      .pipe(
+        filter((e) => e instanceof NavigationEnd), //wait until a navigation ends successfully to prevent error
+        map((e) => this.route.firstChild),
+        switchMap((e) => e?.data ?? of({}))
+      )
+      .subscribe((data) => {
+        this.isRedirect = data['authOnly'] ?? false; //access the value of property "authOnly"
+      });
   }
 
   public async createUser(userData: IUser) {
@@ -44,8 +60,18 @@ export class AuthService {
     });
 
     await userCreated.user?.updateProfile({
-      displayName: name
-    })
+      displayName: name,
+    });
     console.log(userCreated);
+  }
+
+  public async logout(event?: Event) {
+    if (event) {
+      event.preventDefault(); //prevent the default action of this event (which is redirect to about.html)
+    }
+    await this.auth.signOut();
+
+    //only redirect when at manage page
+    if (this.isRedirect) this.router.navigateByUrl('/');
   }
 }
